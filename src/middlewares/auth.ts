@@ -5,21 +5,27 @@ import jwt from "jsonwebtoken";
 
 const adminAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith("Bearer ")) {
-      return response.failure("Authorization must start with bearer", 400);
+    const authorization = req.headers.authorization;
+    if (!authorization || !authorization.startsWith("Bearer ")) {
+      return res.status(400).json({
+        message: "Authorization header must start with 'Bearer '",
+        status: "failure",
+      });
     }
 
-    // const token = auth.substring(7);
-    // const user: any = jwt.decode(token)!;
-    // const foundUser = await Staff.findOne({ _id: user._id });
-    // if (!foundUser) {
-    //   return response.failure("user does not exist", 400);
-    // }
+    const token = authorization.substring(7);
+    const user: any = jwt.decode(token)!;
+    const foundUser = await Staff.findOne({ _id: user._id });
+    if (!foundUser) {
+      return response.failure("user does not exist", 400);
+    }
 
-    // if (foundUser.role !== "admin") {
-    //   return response.failure("only admins allowed", 400);
-    // }
+    if (foundUser.role !== "admin") {
+      return res.status(400).json({
+        message: "Only Admins Allowed",
+        status: "failure",
+      });
+    }
 
     next();
   } catch (error) {
